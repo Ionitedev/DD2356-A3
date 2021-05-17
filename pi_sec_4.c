@@ -10,7 +10,7 @@
 #define NUM_ITER 1000000000
 
 int main(int argc, char* argv[]) {
-    int provided, rank, size, sum;
+    int provided, rank, size, sum = 0;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
 
     double time = MPI_Wtime();
