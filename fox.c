@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     srand(seconds);
 
     // double global_sum = 0;
-    int rank, rank_row, rank_col, size;
+    int rank, rank_row, rank_col, size, provided;
     MPI_Comm comm_cart, comm_row, comm_col;
 
     double **A, **B, **C;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     randomize(A, N);
     randomize(B, N);
 
-    MPI_Init(&argc, &argv);
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
