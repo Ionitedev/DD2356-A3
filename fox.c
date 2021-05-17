@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
     time(&seconds);
     srand(seconds);
 
-    double global_sum = 0;
+    // double global_sum = 0;
     int rank, rank_row, rank_col, size;
     MPI_Comm comm_cart, comm_row, comm_col;
 
@@ -110,10 +110,12 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (rank == 0) {
-        local_mul(A, B, C, N);
-        printf("serial sum: %lf\n", sum(C, N));
-    }
+    double t = MPI_Wtime();
+
+    // if (rank == 0) {
+    //     local_mul(A, B, C, N);
+    //     printf("serial sum: %lf\n", sum(C, N));
+    // }
 
     int q = sqrt(size + 1e-3);
     if (N % q != 0) {
@@ -148,7 +150,7 @@ int main(int argc, char **argv) {
     int mat_size = N / q;
     double *buffer = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_bcast = malloc(mat_size * mat_size * sizeof(double));
-    double local_sum = 0;
+    // double local_sum = 0;
 
     struct Matrix **map_A, **map_B;
     map_init(&map_A, q);
@@ -214,11 +216,12 @@ int main(int argc, char **argv) {
     free(buffer);
     free(buffer_bcast);
 
-    local_sum = sum(local_C, mat_size);
-    MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
+    // local_sum = sum(local_C, mat_size);
+    // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
 
     if (rank == 0) {
-        printf("serial sum: %lf\n", global_sum);
+        // printf("serial sum: %lf\n", global_sum);
+        printf("time: %lf", MPI_Wtime() - t);
     }
 
     for (int x = 0; x < q; x++)
