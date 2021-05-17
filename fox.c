@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 10240 // 27720
+#define N 9216  // 27720
 #define true 1
 #define false 0
 
@@ -224,11 +224,12 @@ int main(int argc, char **argv) {
             if (map_B[x][y].valid == 5) free_mat(map_B[x][y].data, mat_size);
         }
 
-    MPI_Finalize();
+    if (rank != 0) MPI_Finalize();
 
     if (rank == 0) {
         // printf("serial sum: %lf\n", global_sum);
         printf("time: %lf s\n", MPI_Wtime() - t);
+        MPI_Finalize();
     }
 
     free_mat(A, N);
