@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
         // Estimate Pi and display the result
         pi = ((double)count / (double)NUM_ITER) * 4.0;
         
-        printf("The result is %f\n", pi);    
+        printf("The result is %f\n", pi);
     }
 
     MPI_Finalize();

@@ -36,15 +36,15 @@ int main(int argc, char* argv[]) {
 
     if (rank == 0) {
         int thread_count;
-        for (int r = 1; r < size; r++) {
-            MPI_Recv(&thread_count, 1, MPI_INT, r, r, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        for (int i = 1; i < size; i++) {
+            MPI_Recv(&thread_count, 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             count += thread_count;
         }
 
         // Estimate Pi and display the result
         pi = ((double)count / (double)NUM_ITER) * 4.0;
         
-        printf("The result is %f\n", pi);    
+        printf("The result is %f\n", pi);
     }
     else {
         MPI_Send(&count, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);

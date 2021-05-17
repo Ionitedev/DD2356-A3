@@ -35,19 +35,24 @@ int main(int argc, char* argv[]) {
     }
 
     if (rank == 0) {
-        int thread_count;
-        for (int r = 1; r < size; r++) {
-            MPI_Recv(&thread_count, 1, MPI_INT, r, r, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            count += thread_count;
-        }
+        int thread_count[size - 1];
+        MPI_Request requests[size - 1];
+        for (int i = 1; i < size; i++)
+            MPI_Irecv(&thread_count[i - 1], 1, MPI_INT, i, i, MPI_COMM_WORLD, &requests[i - 1]);
+
+        MPI_Waitall(size - 1, requests, MPI_STATUS_IGNORE);
+
+        for (int i = 1; i < size; i++)
+            count += thread_count[i - 1];
 
         // Estimate Pi and display the result
         pi = ((double)count / (double)NUM_ITER) * 4.0;
         
-        printf("The result is %f\n", pi);    
+        printf("The result is %f\n", pi);
     }
     else {
-        MPI_Send(&count, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+        MPI_Request request;
+        MPI_Isend(&count, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, &request);
     }
 
     MPI_Finalize();

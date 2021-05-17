@@ -10,7 +10,7 @@
 #define NUM_ITER 1000000000
 
 int main(int argc, char* argv[]) {
-    int provided, rank, size;
+    int provided, rank, size, sum;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
 
     int count = 0;
@@ -34,20 +34,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (rank == 0) {
-        int thread_count;
-        for (int r = 1; r < size; r++) {
-            MPI_Recv(&thread_count, 1, MPI_INT, r, r, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            count += thread_count;
-        }
+    MPI_Reduce(&count, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
+    if (rank == 0) {
         // Estimate Pi and display the result
-        pi = ((double)count / (double)NUM_ITER) * 4.0;
+        pi = ((double)sum / (double)NUM_ITER) * 4.0;
         
-        printf("The result is %f\n", pi);    
-    }
-    else {
-        MPI_Send(&count, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+        printf("The result is %f\n", pi);
     }
 
     MPI_Finalize();
