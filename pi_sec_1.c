@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         // Estimate Pi and display the result
         pi = ((double)count / (double)NUM_ITER) * 4.0;
         time = MPI_Wtime() - time;
-        printf("The result is %f, time: %lf sec\n", pi);
+        printf("The result is %f, time: %lf sec\n", pi, time);
     }
     else {
         MPI_Send(&count, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);

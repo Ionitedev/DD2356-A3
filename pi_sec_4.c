@@ -10,6 +10,8 @@
 #define NUM_ITER 1000000000
 
 int main(int argc, char* argv[]) {
+    double time = MPI_Wtime();
+
     int provided, rank, size, sum;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
 
@@ -39,8 +41,8 @@ int main(int argc, char* argv[]) {
     if (rank == 0) {
         // Estimate Pi and display the result
         pi = ((double)sum / (double)NUM_ITER) * 4.0;
-        
-        printf("The result is %f\n", pi);
+        time = MPI_Wtime() - time;
+        printf("The result is %f, time: %lf sec\n", pi, time);
     }
 
     MPI_Finalize();
