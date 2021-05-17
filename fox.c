@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 1024 // 27720
+#define N 512 // 27720
 #define true 1
 #define false 0
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     double **A, **B, **C;
     alloc_mat(&A, N);
     alloc_mat(&B, N);
-    alloc_mat(&C, N);
+    // alloc_mat(&C, N);
     randomize(A, N);
     randomize(B, N);
 
@@ -154,11 +154,14 @@ int main(int argc, char **argv) {
     map_init(&map_A, q);
     map_A[i][j].valid = 5;
     alloc_mat(&map_A[i][j].data, mat_size);
-    sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    // sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    randomize(map_A[i][j].data, mat_size);
+
     map_init(&map_B, q);
     map_B[i][j].valid = 5;
     alloc_mat(&map_B[i][j].data, mat_size);
-    sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    // sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    randomize(map_B[i][j].data, mat_size);
 
     double **local_C;
     alloc_mat(&local_C, mat_size);
@@ -228,7 +231,7 @@ int main(int argc, char **argv) {
 
     free_mat(A, N);
     free_mat(B, N);
-    free_mat(C, N);
+    // free_mat(C, N);
 
     return 0;
 }
