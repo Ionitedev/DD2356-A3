@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 512 // 27720
+#define N 27720
 #define true 1
 #define false 0
 
@@ -148,7 +148,8 @@ int main(int argc, char **argv) {
 
     int i = rank_row, j = rank_col;
     int mat_size = N / q;
-    double *buffer = malloc(mat_size * mat_size * sizeof(double));
+    double *buffer_send = malloc(mat_size * mat_size * sizeof(double));
+    double *buffer_recv = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_bcast = malloc(mat_size * mat_size * sizeof(double));
     // double local_sum = 0;
 
@@ -199,30 +200,23 @@ int main(int argc, char **argv) {
             int dest, source;
             dest = (i - 1 + q) % q;
             source = (i + 1) % q;
-            buffer_write(buffer, map_B[k][j].data, mat_size);
-            // printf("step %d: %d send to %d through %d\n", s, rank, dest, dest);
-            MPI_Send(buffer, mat_size * mat_size, MPI_DOUBLE, dest, dest, comm_row);
-            // printf("step %d send ok\n", s);
-
+            
+            buffer_write(buffer_send, map_B[k][j].data, mat_size);            
+            MPI_Sendrecv(buffer_send, mat_size * mat_size, MPI_DOUBLE, dest, dest, buffer_recv, mat_size * mat_size, MPI_DOUBLE, source, i, comm_row, MPI_STATUS_IGNORE);
+            
             alloc_mat(&map_B[(k + 1) % q][j].data, mat_size);
             map_B[(k + 1) % q][j].valid = 5;
-            // printf("step %d: %d try to recv from %d through %d\n", s, i, source, i);
-            MPI_Recv(buffer, mat_size * mat_size, MPI_DOUBLE, source, i, comm_row, MPI_STATUS_IGNORE);
-            buffer_read(buffer, map_B[(k + 1) % q][j].data, mat_size);
-            // printf("step %d recv ok\n", s);
+            buffer_read(buffer_recv, map_B[(k + 1) % q][j].data, mat_size);
+            // printf("step %d sendrecv ok\n", s);
         }
     }
 
-    free(buffer);
+    free(buffer_send);
+    free(buffer_recv);
     free(buffer_bcast);
 
     // local_sum = sum(local_C, mat_size);
     // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
-
-    if (rank == 0) {
-        // printf("serial sum: %lf\n", global_sum);
-        printf("time: %lf", MPI_Wtime() - t);
-    }
 
     for (int x = 0; x < q; x++)
         for (int y = 0; y < q; y++) {
@@ -231,6 +225,11 @@ int main(int argc, char **argv) {
         }
 
     MPI_Finalize();
+
+    if (rank == 0) {
+        // printf("serial sum: %lf\n", global_sum);
+        printf("time: %lf s\n", MPI_Wtime() - t);
+    }
 
     free_mat(A, N);
     free_mat(B, N);
