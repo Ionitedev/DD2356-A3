@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 72 //27720
+#define N 27720
 #define true 1
 #define false 0
 
