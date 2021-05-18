@@ -216,7 +216,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    // local_sum = sum(local_C, mat_size);
+    local_sum = sum(local_C, mat_size);
+    printf("p%d local sum: %lf\n", rank, local_sum);
     // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
 
     free(buffer_send);
