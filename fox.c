@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
     randomize(map_A[i][j].data, mat_size);
     randomize(map_B[i][j].data, mat_size);
 
-    t_r = MPI_Wtime() - tr;
+    t_r = MPI_Wtime() - t_r;
 
     double **local_C;
     alloc_mat(&local_C, mat_size);
