@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 7920
+#define N 1320 // 7920
 #define true 1
 #define false 0
 
@@ -93,7 +93,6 @@ double sum(double **a, int n) {
 int main(int argc, char **argv) {
     time_t seconds;
     time(&seconds);
-    srand(seconds);
 
     // double global_sum = 0;
     int rank, rank_row, rank_col, size, provided;
@@ -109,6 +108,8 @@ int main(int argc, char **argv) {
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    srand(seconds * (rank + 1));
 
     double t = MPI_Wtime();
 
@@ -148,6 +149,7 @@ int main(int argc, char **argv) {
 
     int i = rank_row, j = rank_col;
     int mat_size = N / q;
+
     double *buffer_send = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_recv = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_bcast = malloc(mat_size * mat_size * sizeof(double));
@@ -215,8 +217,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    double local_sum = sum(local_C, mat_size);
-    printf("p%d local sum: %lf\n", rank, local_sum);
+    // double local_sum = sum(local_C, mat_size);
+    // printf("p%d local sum: %lf\n", rank, local_sum);
     // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
 
     free(buffer_send);
@@ -233,9 +235,9 @@ int main(int argc, char **argv) {
     if (rank != 0) MPI_Finalize();
 
     if (rank == 0) {
+        MPI_Finalize();
         // printf("serial sum: %lf\n", global_sum);
         printf("time: %lf s\n", MPI_Wtime() - t - t_r); // exclude randomization time
-        MPI_Finalize();
     }
 
     // free_mat(A, N);
