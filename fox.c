@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 1320 // 7920
+#define N 7920
 #define true 1
 #define false 0
 
@@ -235,9 +235,10 @@ int main(int argc, char **argv) {
     if (rank != 0) MPI_Finalize();
 
     if (rank == 0) {
+        t = MPI_Wtime() - t - t_r;
         MPI_Finalize();
         // printf("serial sum: %lf\n", global_sum);
-        printf("time: %lf s\n", MPI_Wtime() - t - t_r); // exclude randomization time
+        printf("time: %lf s\n", t); // exclude randomization time
     }
 
     // free_mat(A, N);
