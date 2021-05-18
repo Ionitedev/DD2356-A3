@@ -158,13 +158,18 @@ int main(int argc, char **argv) {
     map_A[i][j].valid = 5;
     alloc_mat(&map_A[i][j].data, mat_size);
     // sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
-    randomize(map_A[i][j].data, mat_size);
 
     map_init(&map_B, q);
     map_B[i][j].valid = 5;
     alloc_mat(&map_B[i][j].data, mat_size);
     // sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+
+    double t_r = MPI_Wtime();
+
+    randomize(map_A[i][j].data, mat_size);
     randomize(map_B[i][j].data, mat_size);
+
+    t_r = MPI_Wtime() - tr;
 
     double **local_C;
     alloc_mat(&local_C, mat_size);
@@ -211,12 +216,13 @@ int main(int argc, char **argv) {
         }
     }
 
+    // local_sum = sum(local_C, mat_size);
+    // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
+
     free(buffer_send);
     free(buffer_recv);
     free(buffer_bcast);
-
-    // local_sum = sum(local_C, mat_size);
-    // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
+    free_mat(local_C, mat_size);
 
     for (int x = 0; x < q; x++)
         for (int y = 0; y < q; y++) {
@@ -228,7 +234,7 @@ int main(int argc, char **argv) {
 
     if (rank == 0) {
         // printf("serial sum: %lf\n", global_sum);
-        printf("time: %lf s\n", MPI_Wtime() - t);
+        printf("time: %lf s\n", MPI_Wtime() - t - t_r); // exclude randomization time
         MPI_Finalize();
     }
 
