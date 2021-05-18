@@ -151,7 +151,6 @@ int main(int argc, char **argv) {
     double *buffer_send = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_recv = malloc(mat_size * mat_size * sizeof(double));
     double *buffer_bcast = malloc(mat_size * mat_size * sizeof(double));
-    // double local_sum = 0;
 
     struct Matrix **map_A, **map_B;
     map_init(&map_A, q);
@@ -216,7 +215,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    local_sum = sum(local_C, mat_size);
+    double local_sum = sum(local_C, mat_size);
     printf("p%d local sum: %lf\n", rank, local_sum);
     // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
 
