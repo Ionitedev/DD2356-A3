@@ -12,7 +12,6 @@
 
 struct Matrix {
     double **data;
-    int valid;
 };
 
 void buffer_read(double *buffer, double **a, int n) {
@@ -25,10 +24,16 @@ void buffer_write(double *buffer, double **a, int n) {
         buffer[i] = a[i / n][i % n];
 }
 
-void map_init(struct Matrix ***a, int n) {
+void init_map(struct Matrix ***a, int n) {
     *a = malloc(n * sizeof(struct Matrix*));
     for (int i = 0; i < n; i++)
         (*a)[i] = malloc(n * sizeof(struct Matrix));
+}
+
+void free_map(struct Matrix **a, int n) {
+    for (int i = 0; i < n; i++)
+        free(a[i]);
+    free(a);
 }
 
 void alloc_mat(double ***a, int n) {
@@ -155,13 +160,11 @@ int main(int argc, char **argv) {
     double *buffer_bcast = malloc(mat_size * mat_size * sizeof(double));
 
     struct Matrix **map_A, **map_B;
-    map_init(&map_A, q);
-    map_A[i][j].valid = 5;
+    init_map(&map_A, q);
     alloc_mat(&map_A[i][j].data, mat_size);
     // sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
 
-    map_init(&map_B, q);
-    map_B[i][j].valid = 5;
+    init_map(&map_B, q);
     alloc_mat(&map_B[i][j].data, mat_size);
     // sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
 
@@ -187,7 +190,6 @@ int main(int argc, char **argv) {
         else {
             MPI_Bcast(buffer_bcast, mat_size * mat_size, MPI_DOUBLE, k, comm_col);
             alloc_mat(&map_A[i][k].data, mat_size);
-            map_A[i][k].valid = 5;
             buffer_read(buffer_bcast, map_A[i][k].data, mat_size);
             // printf("step %d broadcast recv ok!\n", s);
         }
@@ -211,10 +213,12 @@ int main(int argc, char **argv) {
             MPI_Sendrecv(buffer_send, mat_size * mat_size, MPI_DOUBLE, dest, dest, buffer_recv, mat_size * mat_size, MPI_DOUBLE, source, i, comm_row, MPI_STATUS_IGNORE);
             
             alloc_mat(&map_B[(k + 1) % q][j].data, mat_size);
-            map_B[(k + 1) % q][j].valid = 5;
             buffer_read(buffer_recv, map_B[(k + 1) % q][j].data, mat_size);
             // printf("step %d sendrecv ok\n", s);
         }
+
+        free_mat(map_A[i][k].data, mat_size);
+        free_mat(map_B[k][j].data, mat_size);
     }
 
     // double local_sum = sum(local_C, mat_size);
@@ -225,12 +229,8 @@ int main(int argc, char **argv) {
     free(buffer_recv);
     free(buffer_bcast);
     free_mat(local_C, mat_size);
-
-    for (int x = 0; x < q; x++)
-        for (int y = 0; y < q; y++) {
-            if (map_A[x][y].valid == 5) free_mat(map_A[x][y].data, mat_size);
-            if (map_B[x][y].valid == 5) free_mat(map_B[x][y].data, mat_size);
-        }
+    free_map(map_A, q);
+    free_map(map_B, q);
 
     if (rank != 0) MPI_Finalize();
 
