@@ -99,12 +99,12 @@ int main(int argc, char **argv) {
     int rank, rank_row, rank_col, size, provided;
     MPI_Comm comm_cart, comm_row, comm_col;
 
-    double **A, **B, **C;
-    alloc_mat(&A, N);
-    alloc_mat(&B, N);
+    // double **A, **B, **C;
+    // alloc_mat(&A, N);
+    // alloc_mat(&B, N);
     // alloc_mat(&C, N);
-    randomize(A, N);
-    randomize(B, N);
+    // randomize(A, N);
+    // randomize(B, N);
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -238,8 +238,8 @@ int main(int argc, char **argv) {
         MPI_Finalize();
     }
 
-    free_mat(A, N);
-    free_mat(B, N);
+    // free_mat(A, N);
+    // free_mat(B, N);
     // free_mat(C, N);
 
     return 0;
