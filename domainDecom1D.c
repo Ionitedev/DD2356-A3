@@ -52,11 +52,11 @@ int main(int argc, char *argv[]){
 
     
     // Print f values
-    if (rank==0){ // print only rank 0 for convenience
+    if (rank==1){ // print only rank 0 for convenience
         printf("My rank %d of %d\n", rank, size );
         printf("Here are my values for f including ghost cells\n");
-        for (i = 0; i < nxn_loc - 1; i++)
-	       printf("dsin(x)/dx: %f, cos(x): %f\n", (f[i + 1] - f[i]) / dx, cos(L_loc * rank + (i - 1) * dx));
+        for (i = 1; i < nxn_loc - 2; i++)
+	       printf("dsin(x)/dx: %f, cos(x): %f\n", dfdx[i], cos(L_loc * rank + (i - 1) * dx));
         printf("\n");
     }   
 

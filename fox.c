@@ -6,7 +6,7 @@
 #include <time.h>
 #include <mpi.h>
 
-#define N 7920
+#define N 330
 #define true 1
 #define false 0
 
@@ -99,16 +99,16 @@ int main(int argc, char **argv) {
     time_t seconds;
     time(&seconds);
 
-    // double global_sum = 0;
+    double global_sum = 0;
     int rank, rank_row, rank_col, size, provided;
     MPI_Comm comm_cart, comm_row, comm_col;
 
-    // double **A, **B, **C;
-    // alloc_mat(&A, N);
-    // alloc_mat(&B, N);
-    // alloc_mat(&C, N);
-    // randomize(A, N);
-    // randomize(B, N);
+    double **A, **B, **C;
+    alloc_mat(&A, N);
+    alloc_mat(&B, N);
+    alloc_mat(&C, N);
+    randomize(A, N);
+    randomize(B, N);
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_SINGLE, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -118,10 +118,10 @@ int main(int argc, char **argv) {
 
     double t = MPI_Wtime();
 
-    // if (rank == 0) {
-    //     local_mul(A, B, C, N);
-    //     printf("serial sum: %lf\n", sum(C, N));
-    // }
+    if (rank == 0) {
+        local_mul(A, B, C, N);
+        printf("serial sum: %lf\n", sum(C, N));
+    }
 
     int q = sqrt(size + 1e-3);
     if (N % q != 0) {
@@ -162,16 +162,16 @@ int main(int argc, char **argv) {
     struct Matrix **map_A, **map_B;
     init_map(&map_A, q);
     alloc_mat(&map_A[i][j].data, mat_size);
-    // sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    sub_matrix(A, map_A[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
 
     init_map(&map_B, q);
     alloc_mat(&map_B[i][j].data, mat_size);
-    // sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
+    sub_matrix(B, map_B[i][j].data, rank_row * mat_size, rank_col * mat_size, mat_size);
 
     double t_r = MPI_Wtime();
 
-    randomize(map_A[i][j].data, mat_size);
-    randomize(map_B[i][j].data, mat_size);
+    // randomize(map_A[i][j].data, mat_size);
+    // randomize(map_B[i][j].data, mat_size);
 
     t_r = MPI_Wtime() - t_r;
 
@@ -221,9 +221,9 @@ int main(int argc, char **argv) {
         free_mat(map_B[k][j].data, mat_size);
     }
 
-    // double local_sum = sum(local_C, mat_size);
+    double local_sum = sum(local_C, mat_size);
     // printf("p%d local sum: %lf\n", rank, local_sum);
-    // MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
+    MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, comm_cart);
 
     free(buffer_send);
     free(buffer_recv);
@@ -237,13 +237,13 @@ int main(int argc, char **argv) {
     if (rank == 0) {
         t = MPI_Wtime() - t - t_r;
         MPI_Finalize();
-        // printf("serial sum: %lf\n", global_sum);
-        printf("time: %lf s\n", t); // exclude randomization time
+        printf("parallel sum: %lf\n", global_sum);
+        printf("time: %lf + %lf s\n", t, t_r); // exclude randomization time
     }
 
-    // free_mat(A, N);
-    // free_mat(B, N);
-    // free_mat(C, N);
+    free_mat(A, N);
+    free_mat(B, N);
+    free_mat(C, N);
 
     return 0;
 }
